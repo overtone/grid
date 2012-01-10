@@ -30,8 +30,8 @@
 
 ;;; -- end section to be pushed upstream
 
-(def RED 15)
-(def OFF 12)
+(def RED-both-buffers 15)
+(def OFF-both-buffers 12)
 
 (defn midi-note->coords [note]
   (let [y   (quot note 16)
@@ -42,6 +42,16 @@
   (+ x (* 16 y)))
 
 (def set-XY-grid (make-ShortMessage :control-change 0 1))
+
+;;; messages to control double-buffering.
+;;;
+;;; these messages display one buffer, copy that buffer's contents to
+;;; the other buffer, and set the other buffer to update in the background.
+(def display-buffer-0 (make-ShortMessage :control-change 0 (+ 32 16 4)))
+(def display-buffer-1 (make-ShortMessage :control-change 0 (+ 32 16 1)))
+
+(def RED-single-buffer 3)
+(def OFF-single-buffer 0)
 
 (defn make-launchpad []
   (if-let [launchpad-in (midi-in "Launchpad")]
@@ -69,19 +79,15 @@
           ;; but again, this wipes all other state.
           (led-frame this (repeat 8 (repeat 8 :on))))
         (led-on [this x y]
-          (midi-note-on launchpad-out (coords->midi-note x y) RED))
+          (midi-note-on launchpad-out (coords->midi-note x y) RED-both-buffers))
         (led-off [this x y]
-          (midi-note-on launchpad-out (coords->midi-note x y) OFF))
+          (midi-note-on launchpad-out (coords->midi-note x y) OFF-both-buffers))
         (led-frame [this rows]
-          ;; send a dummy message to ensure we start from the origin.
-          ;; this message sets the button layout to the default X-Y
-          ;; layout rather than drum layout.
-          (midi-send launchpad-out set-XY-grid)
+          (midi-send launchpad-out display-buffer-0)
           (doseq [[a b] (partition 2 (apply concat rows))]
-            (let [a     (if (= :on a) RED OFF)
-                  b     (if (= :on b) RED OFF)]
+            (let [a     (if (= :on a) RED-single-buffer OFF-single-buffer)
+                  b     (if (= :on b) RED-single-buffer OFF-single-buffer)]
               (midi-send launchpad-out (make-ShortMessage 2 :note-on a b))))
-          ;; TODO: utilize double-buffering to change all LEDs simultaneously
-          ))
+          (midi-send launchpad-out display-buffer-1)))
       (throw (Exception. "Found launchpad for input but couldn't find it for output")))
     (throw (Exception. "Couldn't find launchpad"))))
