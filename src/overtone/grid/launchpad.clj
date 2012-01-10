@@ -3,6 +3,10 @@
         [clojure.set :only [map-invert]])
   (:import (javax.sound.midi ShortMessage)))
 
+;;; Launchpad implementation of a Grid controller.
+;;; currently only uses the 8x8 grid section, not the extra 16
+;;; peripheral buttons.
+
 ;;; -- this section to be pushed upstream to overtone.midi
 
 (def cmd->java-cmd (map-invert midi-shortmessage-command))
@@ -48,15 +52,16 @@
         (dimensions [this]
           [8 8])
         (clear-all-leds [this]
-          ;; FIXME: use burst mode and possibly double buffering
-          (for [x (range 8)
-                y (range 8)]
-            (led-off this x y)))
+          ;; there is a "reset launchpad" cmd:
+          ;; (make-ShortMessage :control-change 0 0)
+          ;; this will turn all LEDs off but it will also wipe any
+          ;; other state, such as the duty cycle. So let's not do that.
+          (led-frame (repeat 8 (repeat 8 :off))))
         (illuminate-all-leds [this]
-          ;; FIXME: use burst mode and possibly double buffering
-          (for [x (range 8)
-                y (range 8)]
-            (led-on this x y)))
+          ;; similarly, there is a "light all LEDs" cmd:
+          ;; (make-ShortMessage :control-change 0 0x7f)
+          ;; but again, this wipes all other state.
+          (led-frame (repeat 8 (repeat 8 :on))))
         (led-on [this x y]
           (midi-note-on launchpad-out (coords->midi-note x y) RED))
         (led-off [this x y]
@@ -71,6 +76,8 @@
           (doseq [[a b] (partition 2 (apply concat rows))]
             (let [a     (if (= :on a) RED OFF)
                   b     (if (= :on b) RED OFF)]
-              (midi-send launchpad-out (make-ShortMessage 2 :note-on a b))))))
+              (midi-send launchpad-out (make-ShortMessage 2 :note-on a b))))
+          ;; TODO: utilize double-buffering to change all LEDs simultaneously
+          ))
       (throw (Exception. "Found launchpad for input but couldn't find it for output")))
     (throw (Exception. "Couldn't find launchpad"))))
