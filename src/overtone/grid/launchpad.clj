@@ -7,6 +7,10 @@
 ;;; currently only uses the 8x8 grid section, not the extra 16
 ;;; peripheral buttons.
 
+;;; You may wish to consult the Launchpad Programmers Reference when
+;;; reading this file:
+;;; http://novationmusic.com/support/launchpad/
+
 ;;; -- this section to be pushed upstream to overtone.midi
 
 (def cmd->java-cmd (map-invert midi-shortmessage-command))
@@ -36,6 +40,8 @@
 
 (defn coords->midi-note [x y]
   (+ x (* 16 y)))
+
+(def set-XY-grid (make-ShortMessage :control-change 0 1))
 
 (defn make-launchpad []
   (if-let [launchpad-in (midi-in "Launchpad")]
@@ -69,10 +75,8 @@
         (led-frame [this rows]
           ;; send a dummy message to ensure we start from the origin.
           ;; this message sets the button layout to the default X-Y
-          ;; layout rather than drum layout. I don't expect we'll ever
-          ;; want the drum layout; such a transformation could be done
-          ;; at a higher level
-          (midi-send launchpad-out (make-ShortMessage :control-change 0 1))
+          ;; layout rather than drum layout.
+          (midi-send launchpad-out set-XY-grid)
           (doseq [[a b] (partition 2 (apply concat rows))]
             (let [a     (if (= :on a) RED OFF)
                   b     (if (= :on b) RED OFF)]
