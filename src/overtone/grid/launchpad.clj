@@ -41,8 +41,6 @@
 (defn coords->midi-note [x y]
   (+ x (* 16 y)))
 
-(def set-XY-grid (make-ShortMessage :control-change 0 1))
-
 ;;; messages to control double-buffering.
 ;;;
 ;;; these messages display one buffer, copy that buffer's contents to
