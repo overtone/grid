@@ -62,12 +62,12 @@
           ;; (make-ShortMessage :control-change 0 0)
           ;; this will turn all LEDs off but it will also wipe any
           ;; other state, such as the duty cycle. So let's not do that.
-          (led-frame (repeat 8 (repeat 8 :off))))
+          (led-frame this (repeat 8 (repeat 8 :off))))
         (illuminate-all-leds [this]
           ;; similarly, there is a "light all LEDs" cmd:
           ;; (make-ShortMessage :control-change 0 0x7f)
           ;; but again, this wipes all other state.
-          (led-frame (repeat 8 (repeat 8 :on))))
+          (led-frame this (repeat 8 (repeat 8 :on))))
         (led-on [this x y]
           (midi-note-on launchpad-out (coords->midi-note x y) RED))
         (led-off [this x y]
