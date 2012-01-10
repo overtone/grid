@@ -7,7 +7,7 @@
   (illuminate-all-leds [this])
   (led-on [this x y])
   (led-off [this x y])
-  (led-frame [this idx & rows])
+  (led-frame [this rows])
   (is-connected? [this])
   (disconnect [this]))
 

@@ -39,7 +39,12 @@
           (midi-note-on launchpad-out (coords->midi-note x y) RED))
         (led-off [this x y]
           (midi-note-off launchpad-out (coords->midi-note x y)))
-        (led-frame [this idx & rows]
-          "FIXME: unimplemented"))
+        (led-frame [this rows]
+          ;; FIXME: use burst mode and possibly double buffering
+          (doseq [[y row]  (map vector (iterate inc 0) rows)
+                  [x cell] (map vector (iterate inc 0) row)]
+            (case cell
+              :on  (led-on  this x y)
+              :off (led-off this x y)))))
       (throw (Exception. "Found launchpad for input but couldn't find it for output")))
     (throw (Exception. "Couldn't find launchpad"))))

@@ -52,8 +52,13 @@
            (monome/led-on monome x y))
          (led-off [this x y]
            (monome/led-off monome x y))
-         (led-frame [this idx & rows]
-           (apply monome/frame monome idx rows))
+         (led-frame [this rows]
+           ;; FIXME need to translate a large grid into multiple 8x8
+           ;; grids and specify idx values
+           ;; and also translate :on and :off values into
+           ;; monome-serial friendly rows
+           #_(apply monome/frame monome rows)
+           nil)
          (is-connected? [this]
            (monome-core/connected? monome))
          (disconnect [this]

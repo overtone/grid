@@ -18,7 +18,7 @@
          nil)
        (led-off [this x y]
          nil)
-       (led-frame [this idx & rows]
+       (led-frame [this rows]
          nil)
        (is-connected? [this]
          true)
