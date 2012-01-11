@@ -61,4 +61,8 @@
     (handler {:cmd ShortMessage/NOTE_ON :vel 127 :note 0x08} -1) => nil
     (handler {:cmd ShortMessage/NOTE_ON :vel 127 :note 0x19} -1) => nil
     (handler {:cmd ShortMessage/NOTE_ON :vel 127 :note 0xff} -1) => nil)
+
+  (fact "Midi handler ignores control-change messages"
+    (handler {:cmd ShortMessage/CONTROL_CHANGE :vel 127 :note 0x7f} -1) => nil
+    (handler {:cmd ShortMessage/CONTROL_CHANGE :vel   0 :note 0x3f} -1) => nil)
   )
