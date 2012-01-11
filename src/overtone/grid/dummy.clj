@@ -6,17 +6,15 @@
      (make-dummy 8 8))
   ([x y]
      (reify Grid
+       ;; might be nice to be able to manually trigger button events
+       ;; for testing purposes rather than just ignoring on-action
        (on-action [this f group name]
          nil)
        (dimensions [this]
          [x y])
-       (clear-all-leds [this]
+       (set-all-leds [this colour]
          nil)
-       (illuminate-all-leds [this]
-         nil)
-       (led-on [this x y]
-         nil)
-       (led-off [this x y]
+       (led-set [this x y colour]
          nil)
        (led-frame [this rows]
          nil)

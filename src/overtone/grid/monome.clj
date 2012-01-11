@@ -44,14 +44,14 @@
            (handlers/on-action m f group name))
          (dimensions [this]
            [n-cols n-rows])
-         (clear-all-leds [this]
-           (monome/clear monome))
-         (illuminate-all-leds [this]
-           (monome/all monome))
-         (led-on [this x y]
-           (monome/led-on monome x y))
-         (led-off [this x y]
-           (monome/led-off monome x y))
+         (set-all-leds [this colour]
+           (if (zero? colour)
+             (monome/clear monome)
+             (monome/all monome)))
+         (led-on [this x y colour]
+           (if (zero? colour)
+             (monome/led-off monome x y)
+             (monome/led-on monome x y)))
          (led-frame [this rows]
            ;; FIXME need to translate a large grid into multiple 8x8
            ;; grids and specify idx values
