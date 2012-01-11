@@ -58,8 +58,4 @@
            ;; and also translate :on and :off values into
            ;; monome-serial friendly rows
            #_(apply monome/frame monome rows)
-           nil)
-         (is-connected? [this]
-           (monome-core/connected? monome))
-         (disconnect [this]
-           (monome-core/disconnect monome))))))
+           nil)))))

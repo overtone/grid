@@ -17,8 +17,4 @@
        (led-set [this x y colour]
          nil)
        (led-frame [this rows]
-         nil)
-       (is-connected? [this]
-         true)
-       (disconnect [this]
          nil))))

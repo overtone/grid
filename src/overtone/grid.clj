@@ -20,9 +20,5 @@
 
      eg, if you have a grid 4 columns by 2 rows, you could update all of the LEDs like this:
        (led-frame grid [[0 1 1 0]
-                        [1 0 1 0]])")
-  (is-connected? [this]
-    "Returns true if this grid is currently connected to an underlying hardware device.")
-  (disconnect [this]
-    "Disconnects this grid from its hardware device."))
+                        [1 0 1 0]])"))
 
