@@ -30,13 +30,13 @@
 
 ;;; -- end section to be pushed upstream
 
-(defn midi-note->coords [note]
-  (let [y   (quot note 16)
-        x   (rem note 16)]
-    [x y]))
-
 (defn coords->midi-note [x y]
   (+ x (* 16 y)))
+
+(def midi-note->coords
+  (into {} (for [x (range 8)
+                 y (range 8)]
+             [(+ x (* y 16)) [x y]])))
 
 ;;; messages to control double-buffering.
 ;;;
@@ -78,16 +78,22 @@
 (defn both-buffers [colour]
   (bit-or colour 4r030))
 
+(defn midi-handler [f]
+  (fn [event ts]
+    #_(println ts ":" event)
+    (when (= (:cmd event) (cmd->java-cmd :note-on))
+      #_(println "got a note-on event")
+      (when (contains? midi-note->coords (:note event))
+        (let [note  (:note event)
+              [x y] (midi-note->coords note)]
+          (if (zero? (:vel event))
+            (f :release x y)
+            (f :press   x y)))))))
+
 (defrecord Launchpad [launchpad-in launchpad-out palette]
   Grid
   (on-action [this f group name]   ; currently ignoring group and name
-    (midi-handle-events launchpad-in
-                        (fn [event ts]
-                          (let [note  (:note event)
-                                [x y] (midi-note->coords note)]
-                            (if (zero? (:vel event))
-                              (f :release x y)
-                              (f :press   x y))))))
+    (midi-handle-events launchpad-in (midi-handler f)))
   (dimensions [this]
     [8 8])
   (set-all-leds [this colour]

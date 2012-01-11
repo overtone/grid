@@ -49,3 +49,16 @@
 
 (fact "make-ShortMessage can create valid note-on messages on different channels"
   (make-ShortMessage 2 :note-on 4 6) => (two-byte-message (doto (ShortMessage.) (.setMessage 0x90 2 4 6))))
+
+(let [handler (midi-handler (fn [event x y] [event x y]))]
+  (fact "Midi handler forwards regular note-on messages and translates coordinates"
+    (handler {:cmd ShortMessage/NOTE_ON :vel 127 :note 0   } -1) => [:press   0 0]
+    (handler {:cmd ShortMessage/NOTE_ON :vel 0   :note 0x30} -1) => [:release 0 3]
+    (handler {:cmd ShortMessage/NOTE_ON :vel 127 :note 0x37} -1) => [:press 7 3]
+    (handler {:cmd ShortMessage/NOTE_ON :vel 127 :note 0x77} -1) => [:press 7 7])
+
+  (fact "Midi handler ignores note-on messages with notes it doesn't understand"
+    (handler {:cmd ShortMessage/NOTE_ON :vel 127 :note 0x08} -1) => nil
+    (handler {:cmd ShortMessage/NOTE_ON :vel 127 :note 0x19} -1) => nil
+    (handler {:cmd ShortMessage/NOTE_ON :vel 127 :note 0xff} -1) => nil)
+  )
