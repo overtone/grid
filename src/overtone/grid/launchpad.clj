@@ -80,9 +80,7 @@
 
 (defn midi-handler [f]
   (fn [event ts]
-    #_(println ts ":" event)
     (when (= (:cmd event) (cmd->java-cmd :note-on))
-      #_(println "got a note-on event")
       (when (contains? midi-note->coords (:note event))
         (let [note  (:note event)
               [x y] (midi-note->coords note)]
