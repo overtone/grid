@@ -81,32 +81,35 @@
 (defn both-buffers [colour]
   (bit-or colour 4r030))
 
+(defrecord Launchpad [launchpad-in launchpad-out]
+  Grid
+  (on-action [this f group name]   ; currently ignoring group and name
+    (midi-handle-events launchpad-in
+                        (fn [event ts]
+                          (let [note  (:note event)
+                                [x y] (midi-note->coords note)]
+                            (if (zero? (:vel event))
+                              (f :release x y)
+                              (f :press   x y))))))
+  (dimensions [this]
+    [8 8])
+  (set-all-leds [this colour]
+    (led-frame this (repeat 8 (repeat 8 colour))))
+  (led-set [this x y colour]
+    (midi-note-on launchpad-out (coords->midi-note x y) (both-buffers (colours (palette colour)))))
+  (led-frame [this rows]
+    (midi-send launchpad-out display-buffer-0)
+    (doseq [[a b] (partition 2 (apply concat rows))]
+      (let [a-colour (colours (palette a))
+            b-colour (colours (palette b))]
+        (midi-send launchpad-out (make-ShortMessage 2 :note-on a-colour b-colour))))
+    (midi-send launchpad-out display-buffer-1)) )
+
 (defn make-launchpad
   "Creates an 8x8 Grid implementation backed by a launchpad."
   []
   (if-let [launchpad-in (midi-in "Launchpad")]
     (if-let [launchpad-out (midi-out "Launchpad")]
-      (reify Grid
-        (on-action [this f group name] ; currently ignoring group and name
-          (midi-handle-events launchpad-in
-                              (fn [event ts]
-                                (let [note  (:note event)
-                                      [x y] (midi-note->coords note)]
-                                  (if (zero? (:vel event))
-                                    (f :release x y)
-                                    (f :press   x y))))))
-        (dimensions [this]
-          [8 8])
-        (set-all-leds [this colour]
-          (led-frame this (repeat 8 (repeat 8 colour))))
-        (led-set [this x y colour]
-          (midi-note-on launchpad-out (coords->midi-note x y) (both-buffers (colours (palette colour)))))
-        (led-frame [this rows]
-          (midi-send launchpad-out display-buffer-0)
-          (doseq [[a b] (partition 2 (apply concat rows))]
-            (let [a-colour (colours (palette a))
-                  b-colour (colours (palette b))]
-              (midi-send launchpad-out (make-ShortMessage 2 :note-on a-colour b-colour))))
-          (midi-send launchpad-out display-buffer-1)))
+      (Launchpad. launchpad-in launchpad-out)
       (throw (Exception. "Found launchpad for input but couldn't find it for output")))
     (throw (Exception. "Couldn't find launchpad"))))
