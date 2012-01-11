@@ -69,9 +69,6 @@
 ;;; the whole field in double-buffering mode. For other values, see
 ;;; the programmer's reference.
 
-(def palette
-  [:off :red :green :yellow])
-
 (def colours
   {:red    4r003
    :green  4r300
@@ -81,7 +78,7 @@
 (defn both-buffers [colour]
   (bit-or colour 4r030))
 
-(defrecord Launchpad [launchpad-in launchpad-out]
+(defrecord Launchpad [launchpad-in launchpad-out palette]
   Grid
   (on-action [this f group name]   ; currently ignoring group and name
     (midi-handle-events launchpad-in
@@ -109,13 +106,17 @@
     (midi-send launchpad-out display-buffer-1)) )
 
 (defmethod print-method Launchpad [lp w]
-  (.write w (format "#<Launchpad dimensions%s>" (dimensions lp))))
+  (.write w (format "#<Launchpad dimensions%s palette%s>" (dimensions lp) (:palette lp))))
+
+(def default-palette
+  [:off :red :green :yellow])
 
 (defn make-launchpad
   "Creates an 8x8 Grid implementation backed by a launchpad."
-  []
-  (if-let [launchpad-in (midi-in "Launchpad")]
-    (if-let [launchpad-out (midi-out "Launchpad")]
-      (Launchpad. launchpad-in launchpad-out)
-      (throw (Exception. "Found launchpad for input but couldn't find it for output")))
-    (throw (Exception. "Couldn't find launchpad"))))
+  ([] (make-launchpad default-palette))
+  ([palette]
+     (if-let [launchpad-in (midi-in "Launchpad")]
+       (if-let [launchpad-out (midi-out "Launchpad")]
+         (Launchpad. launchpad-in launchpad-out palette)
+         (throw (Exception. "Found launchpad for input but couldn't find it for output")))
+       (throw (Exception. "Couldn't find launchpad")))))
