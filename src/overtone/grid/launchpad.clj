@@ -97,13 +97,19 @@
     (led-frame this (repeat 8 (repeat 8 colour))))
   (led-set [this x y colour]
     (midi-note-on launchpad-out (coords->midi-note x y) (both-buffers (colours (palette colour)))))
-  (led-frame [this rows]
+  (led-frame [this leds]
     (midi-send launchpad-out display-buffer-0)
-    (doseq [[a b] (partition 2 (apply concat rows))]
-      (let [a-colour (colours (palette a))
-            b-colour (colours (palette b))]
-        (midi-send launchpad-out (make-ShortMessage 2 :note-on a-colour b-colour))))
+    (let [coords (for [y (range 8)
+                       x (range 8)]
+                   [x y])]
+      (doseq [[coord-1 coord-2] (partition 2 coords)]
+        (let [colour-1 (colours (palette (get leds coord-1 0)))
+              colour-2 (colours (palette (get leds coord-2 0)))]
+          (midi-send launchpad-out (make-ShortMessage 2 :note-on colour-1 colour-2)))))
     (midi-send launchpad-out display-buffer-1)) )
+
+(defmethod print-method Launchpad [lp w]
+  (.write w (format "#<Launchpad dimensions%s>" (dimensions lp))))
 
 (defn make-launchpad
   "Creates an 8x8 Grid implementation backed by a launchpad."

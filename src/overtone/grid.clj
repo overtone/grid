@@ -15,10 +15,12 @@
     is an index value into a palette, but this may change.")
   (set-all-leds [this colour]
     "Sets all LEDs to a single colour.")
-  (led-frame [this rows]
-    "Update the entire field of LEDs. The rows arg is a seq of seqs of colour values, same as in led-set.
+  (led-frame [this leds]
+    "Update the entire field of LEDs. The rows arg is a map of coords to colour values, the same as in led-set.
 
-     eg, if you have a grid 4 columns by 2 rows, you could update all of the LEDs like this:
-       (led-frame grid [[0 1 1 0]
-                        [1 0 1 0]])"))
+     eg, if you have a grid 2 columns by 2 rows, you could update all of the LEDs like this:
+       (led-frame grid {[0 0] 1 [1 0] 0
+                        [0 1] 0 [1 1] 1})
+
+     Any unspecified coords will default to 0."))
 
