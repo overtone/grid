@@ -4,6 +4,37 @@
              [monome-serial.event-handlers :as handlers])
   (:use [overtone.grid]))
 
+;;; Might it be possible or desirable to transition to
+;;; (extend-type Monome
+;;;    Grid
+;;;    ...
+;;;   )
+;;; and get rid of this intermediate MonomeGrid record? Currently the
+;;; only blocker is that Monome doesn't know its own size and so can't
+;;; implement (dimensions monome).
+
+(defrecord MonomeGrid [monome n-cols n-rows]
+  Grid
+  (on-action [this f group name]
+    (handlers/on-action monome f group name))
+  (dimensions [this]
+    [n-cols n-rows])
+  (set-all-leds [this colour]
+    (if (zero? colour)
+      (monome/clear monome)
+      (monome/all monome)))
+  (led-on [this x y colour]
+    (if (zero? colour)
+      (monome/led-off monome x y)
+      (monome/led-on monome x y)))
+  (led-frame [this rows]
+    ;; FIXME need to translate a large grid into multiple 8x8
+    ;; grids and specify idx values
+    ;; and also translate :on and :off values into
+    ;; monome-serial friendly rows
+    #_(apply monome/frame monome rows)
+    nil))
+
 (def MONOME-KINDS
   {
    :64       [8   8]
@@ -39,23 +70,4 @@
        (make-monome path n-cols n-rows)))
   ([path n-cols n-rows]
      (let [monome (monome-core/connect path)]
-       (reify Grid
-         (on-action [this f group name]
-           (handlers/on-action m f group name))
-         (dimensions [this]
-           [n-cols n-rows])
-         (set-all-leds [this colour]
-           (if (zero? colour)
-             (monome/clear monome)
-             (monome/all monome)))
-         (led-on [this x y colour]
-           (if (zero? colour)
-             (monome/led-off monome x y)
-             (monome/led-on monome x y)))
-         (led-frame [this rows]
-           ;; FIXME need to translate a large grid into multiple 8x8
-           ;; grids and specify idx values
-           ;; and also translate :on and :off values into
-           ;; monome-serial friendly rows
-           #_(apply monome/frame monome rows)
-           nil)))))
+       (MomoneGrid. monome n-cols n-rows))))
