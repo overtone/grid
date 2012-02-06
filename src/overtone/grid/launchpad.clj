@@ -92,8 +92,6 @@
   Grid
   (on-action [this f group name]   ; currently ignoring group and name
     (midi-handle-events launchpad-in (midi-handler f)))
-  (dimensions [this]
-    [8 8])
   (set-all-leds [this colour]
     (led-frame this (repeat 8 (repeat 8 colour))))
   (led-set [this x y colour]
@@ -110,7 +108,7 @@
     (midi-send launchpad-out display-buffer-1)) )
 
 (defmethod print-method Launchpad [lp w]
-  (.write w (format "#<Launchpad dimensions%s palette%s>" (dimensions lp) (:palette lp))))
+  (.write w (format "#<Launchpad palette%s>" (:palette lp))))
 
 (def default-palette
   [:off :red :green :yellow])

@@ -8,8 +8,6 @@
      The fn should take three args: [type x y], where type is :press or :release, and x and y are the coords of the button.
 
      The group and name are currently only used by monome, but will be extended to launchpad soon.")
-  (dimensions [this]
-    "Returns the dimensions of this grid as a vector: [cols rows]")
   (led-set [this x y colour]
     "Set the LED at position [x y] to the given colour. Currently colour
     is an index value into a palette, but this may change.")
