@@ -108,10 +108,8 @@
 
 (defn midi-handler [launchpad f]
   (fn [event ts]
-    (println "bop")
     (if-let [metakey (get-metakey event)]
       (let [action @(.bindings-fn-atom launchpad)]
-        (println "fuz")
         (if (zero? (:vel event))
           (action :release metakey)
           (action :press metakey)))
@@ -119,7 +117,6 @@
         (if (contains? midi-note->coords (:note event))
           (let [note  (:note event)
                 [x y] (midi-note->coords note)]
-            (println "bah")
             (if (zero? (:vel event))
               (f :release x y)
               (f :press   x y))))))))
@@ -127,10 +124,8 @@
 (defprotocol MetaKeys
   "A representation binding functionality to meta-keys, assuming they won't be part of the standard
    grid interface, an implementation will report its functionality and let you bind handlers to the metakeys"
-  (get-metakeys [this] "Return a map of keys to supported functions, just informational")
   (meta-led-set [this key colour] "If supported, set the color of an led on the key")
-  (meta-bind [this binding-fn] "Binds a functions to keypresses")
-  (meta-get-bindings [this] "Returns the bindings"))
+  (meta-bind [this binding-fn] "Binds a functions to keypresses"))
 
 (defn launchpad-set-meta-led [midi-out key color]
   (let [[cmd note] (metakeys->midinote key)
@@ -140,19 +135,16 @@
 
 (defrecord Launchpad [launchpad-in launchpad-out palette bindings-fn-atom]
   MetaKeys
-  (get-metakeys [this] (apply array-map (interleave (keys metakeys->midinote) (cycle [[:led-set :bind]]))))
   (meta-led-set [this key colour]
     (launchpad-set-meta-led launchpad-out key colour))
   (meta-bind [this binding-fn] (swap! bindings-fn-atom (constantly binding-fn)))
-  (meta-get-bindings [this] @bindings-fn-atom)
   Grid
   (on-action [this f group name]   ; currently ignoring group and name
     (midi-handle-events launchpad-in (#'midi-handler this f)))
   (set-all-leds [this colour]
     (led-frame this (repeat 8 (repeat 8 colour))))
   (led-set [this x y colour]
-    (midi-note-on launchpad-out (coords->midi-note x y) (both-buffers (colours colour;(palette colour)
-                                                                               ))))
+    (midi-note-on launchpad-out (coords->midi-note x y) (both-buffers (colours colour))))
   (led-frame [this leds]
     (midi-send launchpad-out display-buffer-0)
     (let [coords (for [y (range 8)
