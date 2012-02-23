@@ -98,7 +98,6 @@
    :arm [:note-on 120]})
 
 (def midi->metakeys
-  ;reverse the map
   (map-invert metakeys->midi))
 
 (defn get-metakey
