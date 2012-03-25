@@ -27,8 +27,12 @@ An abstraction for button-grid based controllers such as the monome.
 ## Usage
 
     (def grid (make-launchpad))
-    (led-on grid 1 2)
-    (on-press grid (fn [x y s] (my-instrument x y)))
+    (led-set grid 1 2 1) ; red
+    (led-set grid 1 2 2) ; green
+    (led-set grid 1 2 3) ; yellow
+    (led-set grid 1 2 0) ; off
+    (on-action grid (fn [event x y] (led-set grid x y (if (= :press event) 1 0))) nil nil)
+    (meta-on-action grid (fn [event key] (meta-led-set grid key (if (= :press event) 2 0))))
 
 ## Contributors
 

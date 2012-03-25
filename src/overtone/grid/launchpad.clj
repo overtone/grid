@@ -127,7 +127,7 @@
    grid interface, an implementation will report its functionality and let you bind handlers to the metakeys"
   (meta-led-set [this key colour] "If supported, set the color of an led on the key")
   (meta-list-keys [this] "lists all the supported keys, informational")
-  (meta-on-action [this ]))
+  (meta-on-action [this f] "Set a handler which will be called when a metakey is pressed or released. The handler will be called with two args: event type (:press or :release) and metakey keyword."))
 
 (defn launchpad-set-meta-led [midi-out key palette color]
   (let [[cmd note] (metakeys->midi key)
@@ -143,9 +143,11 @@
   (meta-led-set [this key colour]
     (launchpad-set-meta-led launchpad-out key palette colour))
   (meta-list-keys [this] (keys metakeys->midi))
+  (meta-on-action [this f]
+    (swap! callbacks assoc :metakeys-handler f))
   Grid
   (on-action [this f group name]   ; currently ignoring group and name
-    (midi-handle-events launchpad-in (midi-handler this f)))
+    (swap! callbacks assoc :grid-handler f))
   (set-all-leds [this colour]
     (led-frame this (repeat 8 (repeat 8 colour))))
   (led-set [this x y colour]
@@ -173,6 +175,9 @@
   ([palette]
      (if-let [launchpad-in (midi-in "Launchpad")]
        (if-let [launchpad-out (midi-out "Launchpad")]
-         (Launchpad. launchpad-in launchpad-out palette (atom null-callbacks))
+         (let [callbacks (atom null-callbacks)
+               lp        (Launchpad. launchpad-in launchpad-out palette callbacks)]
+           (midi-handle-events launchpad-in (midi-handler callbacks))
+           lp)
          (throw (Exception. "Found launchpad for input but couldn't find it for output")))
        (throw (Exception. "Couldn't find launchpad")))))
