@@ -170,7 +170,7 @@
   [:off :red :green :yellow])
 
 (defn make-launchpad
-  "Creates an 8x8 Grid implementation backed by a launchpad. Metakey-fn must be a function of 2 args [type metakey], where the midi thread will call it and pass in :press or :release and the keyword associated to the metakey"
+  "Creates an 8x8 Grid implementation backed by a launchpad."
   ([] (make-launchpad default-palette))
   ([palette]
      (if-let [launchpad-in (midi-in "Launchpad")]
