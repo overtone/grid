@@ -1,4 +1,4 @@
-(defproject overtone/grid "0.0.1"
+(defproject org.clojars.philandstuff/grid "0.0.1"
   :description "An abstraction for button-grid based controllers"
   :url "https://github.com/overtone/grid"
   :dependencies [[org.clojure/clojure "1.3.0"]]
