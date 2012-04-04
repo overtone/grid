@@ -38,3 +38,4 @@ An abstraction for button-grid based controllers such as the monome.
 
 * Philip Potter
 * Gary Trakhman
+* Fronx

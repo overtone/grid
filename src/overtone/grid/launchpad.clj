@@ -114,11 +114,8 @@
       (let [{:keys [grid-handler metakeys-handler]} @current-callbacks]
         (if-let [metakey (get-metakey event)]
           (key-event metakeys-handler (:vel event) metakey)
-          (when (= (:cmd event) (cmd->java-cmd :note-on))
-            (if (contains? midi-note->coords (:note event))
-              (let [note  (:note event)
-                    [x y] (midi-note->coords note)]
-                (key-event grid-handler (:vel event) x y))))))
+          (if-let [[x y] (midi-note->coords (:note event))]
+            (key-event grid-handler (:vel event) x y))))
       (catch Exception e ;Don't let the midi thread die, it's messy
         (clojure.stacktrace/print-stack-trace e)))))
 
