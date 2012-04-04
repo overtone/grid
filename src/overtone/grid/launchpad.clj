@@ -105,17 +105,14 @@
   [event]
   (midi->metakeys [(midi-shortmessage-command (:cmd event)) (:note event)]))
 
-(defn key-event [handler vel & args]
-  (apply handler (if (zero? vel) :release :press) args))
-
 (defn midi-handler [current-callbacks]
   (fn [event ts]
     (try
-      (let [{:keys [grid-handler metakeys-handler]} @current-callbacks]
+      (let [key-event (if (zero? (:vel event)) :release :press)]
         (if-let [metakey (get-metakey event)]
-          (key-event metakeys-handler (:vel event) metakey)
+          ((:metakeys-handler @current-callbacks) key-event metakey)
           (if-let [[x y] (midi-note->coords (:note event))]
-            (key-event grid-handler (:vel event) x y))))
+            ((:grid-handler @current-callbacks) key-event x y))))
       (catch Exception e ;Don't let the midi thread die, it's messy
         (clojure.stacktrace/print-stack-trace e)))))
 
